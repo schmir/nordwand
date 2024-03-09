@@ -1,0 +1,30 @@
+default_language_version:
+  python: python3
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+      - id: fix-byte-order-marker
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/schmir/pre-commit-go-hooks
+    rev: "68cb849a91a20af3ad5cccefc5a6fecc41785bce"
+    hooks:
+      - id: gci
+        args:
+          [
+            "--custom-order",
+            "-sStandard",
+            "-sDefault",
+            "-sPrefix(github.com/schmir/nordwand)",
+          ]
+      - id: gofumpt

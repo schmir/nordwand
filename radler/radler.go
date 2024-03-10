@@ -37,6 +37,13 @@ func (r *Radler) IsFull() bool {
 	return r.full
 }
 
+func (r *Radler) Size() int {
+	if r.full {
+		return len(r.window)
+	}
+	return int(r.pos)
+}
+
 // pushOut a single byte from the checksum
 func (r *Radler) pushOut(outgoing uint32) {
 	// substract once from s1
@@ -66,13 +73,18 @@ func (r *Radler) Push(b byte) {
 	}
 }
 
+func (r *Radler) Reset() {
+	r.s1 = 1
+	r.s2 = 0
+	r.pos = 0
+	r.full = false
+}
+
 // New creates a new Radler struct.
 func New(windowSize uint32) *Radler {
-	return &Radler{
-		s1:     1,
-		s2:     0,
+	r := &Radler{
 		window: make([]byte, windowSize),
-		pos:    0,
-		full:   false,
 	}
+	r.Reset()
+	return r
 }

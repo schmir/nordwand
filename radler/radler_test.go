@@ -2,6 +2,7 @@ package radler
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"fmt"
 	"hash/adler32"
 	"testing"
@@ -43,4 +44,21 @@ func TestRadler(t *testing.T) {
 			},
 		)
 	}
+}
+
+func TestRadlerSum256(t *testing.T) {
+	r := New(3)
+	assert.Equal(t, r.Sum256(), sha256.Sum256([]byte{}))
+
+	r.Push(byte(1))
+	assert.Equal(t, r.Sum256(), sha256.Sum256([]byte{1}))
+
+	r.Push(byte(2))
+	assert.Equal(t, r.Sum256(), sha256.Sum256([]byte{1, 2}))
+
+	r.Push(byte(3))
+	assert.Equal(t, r.Sum256(), sha256.Sum256([]byte{1, 2, 3}))
+
+	r.Push(byte(4))
+	assert.Equal(t, r.Sum256(), sha256.Sum256([]byte{2, 3, 4}))
 }

@@ -1,6 +1,8 @@
 // package radler implements a rolling adler32 checksum
 package radler
 
+import "crypto"
+
 const (
 	// mod is the largest prime that is less than 65536.
 	mod = 65521
@@ -18,6 +20,21 @@ type Radler struct {
 // Checksum returns the current checksum
 func (r *Radler) Checksum() uint32 {
 	return (r.s2 << 16) | r.s1
+}
+
+func (r *Radler) Sum256() [32]byte {
+	h := crypto.SHA256.New()
+	if r.full {
+		h.Write(r.window[r.pos:])
+	}
+	h.Write(r.window[0:r.pos])
+	res := [32]byte{}
+	h.Sum(res[:0])
+	return res
+}
+
+func (r *Radler) IsFull() bool {
+	return r.full
 }
 
 // pushOut a single byte from the checksum

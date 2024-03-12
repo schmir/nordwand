@@ -1,5 +1,4 @@
-default:
-    just --list
+default: lint test
 
 # Run tests
 test:

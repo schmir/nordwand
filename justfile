@@ -7,7 +7,3 @@ test:
 # Run golangci-lint
 lint:
     golangci-lint run
-
-# Run the main program
-run:
-    go run ./

@@ -1,8 +1,6 @@
 package delta
 
 import (
-	"fmt"
-
 	"github.com/schmir/nordwand/radler"
 	"github.com/schmir/nordwand/rsig"
 )
@@ -44,16 +42,17 @@ func (db *deltaBuilder) findChunk() (int, bool) {
 		return 0, false
 	}
 
-	fmt.Printf("found a chunk: %d\n", i)
 	return i, true
 }
 
 func (db *deltaBuilder) storeChunkFound(i int) {
-	db.delta = AppendDelta(db.delta, DeltaEntry{
-		Start:  db.deltaEntryStart,
-		End:    db.deltaEntryEnd - uint64(db.signature.WindowSize),
-		Source: SourceUpdate,
-	})
+	if db.chksum.IsFull() {
+		db.delta = AppendDelta(db.delta, DeltaEntry{
+			Start:  db.deltaEntryStart,
+			End:    db.deltaEntryEnd - uint64(db.signature.WindowSize),
+			Source: SourceUpdate,
+		})
+	}
 	db.delta = AppendDelta(db.delta, DeltaEntry{
 		Start:  uint64(i) * uint64(db.signature.WindowSize),
 		End:    uint64(i)*uint64(db.signature.WindowSize) + uint64(db.chksum.Size()),

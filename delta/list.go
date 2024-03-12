@@ -38,3 +38,12 @@ func AppendDelta(lst []Entry, delta Entry) []Entry {
 	}
 	return append(lst, delta)
 }
+
+// FileSize computes the size of the resulting file.
+func FileSize(lst []Entry) uint64 {
+	size := uint64(0)
+	for _, e := range lst {
+		size += e.End - e.Start
+	}
+	return size
+}

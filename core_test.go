@@ -83,6 +83,8 @@ func (tb *TestBuilder) Run(t *testing.T) {
 	tb.numRuns++
 	t.Run(fmt.Sprintf("%d basis:%d updated: %d", tb.numRuns, len(tb.basis.Bytes()), len(tb.update.Bytes())),
 		func(t *testing.T) {
+			assert.Equal(t, delta.FileSize(tb.expected), uint64(len(tb.update.Bytes())))
+
 			sig := rsig.ComputeSignatureWithWindowSize(tb.basis.Bytes(), tb.windowSize)
 			deltas := delta.ComputeDelta(sig, tb.update.Bytes())
 			fmt.Printf("%3d:  have: %v\n  expected: %v\n", tb.numRuns, deltas, tb.expected)
@@ -142,12 +144,12 @@ func TestTail(t *testing.T) {
 	}
 	basisTailStart := uint64(len(tb.basis.Bytes()))
 	tb.basis.Write(tail)
-	basisTailEnds := uint64(len(tb.basis.Bytes()))
+	basisTailEnd := uint64(len(tb.basis.Bytes()))
 
 	ensureTailFound := func() {
 		tb.Expect(delta.Entry{
 			Start:  basisTailStart,
-			End:    basisTailEnds,
+			End:    basisTailEnd,
 			Source: delta.SourceBasis,
 		})
 		tb.Run(t)

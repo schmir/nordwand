@@ -1,21 +1,21 @@
 package delta
 
-type DeltaSource int8
+type Source int8
 
 const (
-	_                       = iota
-	SourceBasis DeltaSource = iota
+	_                  = iota
+	SourceBasis Source = iota
 	SourceUpdate
 )
 
-// DeltaEntry refers to a range inside either the original or the new file
-type DeltaEntry struct {
+// Entry refers to a range inside either the original or the new file.
+type Entry struct {
 	Start, End uint64
-	Source     DeltaSource
+	Source     Source
 }
 
 // mergeDeltaEntry merges the next DeltaEntry with this one if possible. It return true on success.
-func (entry *DeltaEntry) mergeDeltaEntry(next DeltaEntry) bool {
+func (entry *Entry) mergeDeltaEntry(next Entry) bool {
 	if entry.End != next.Start || entry.Source != next.Source {
 		return false
 	}
@@ -23,13 +23,13 @@ func (entry *DeltaEntry) mergeDeltaEntry(next DeltaEntry) bool {
 	return true
 }
 
-func (entry DeltaEntry) isEmpty() bool {
+func (entry Entry) isEmpty() bool {
 	return entry.End <= entry.Start
 }
 
 // AppendDelta appends the given DeltaEntry to the list. It will ignore empty DeltaEntries and
 // merge the given DeltaEntry with the last one if possible.
-func AppendDelta(lst []DeltaEntry, delta DeltaEntry) []DeltaEntry {
+func AppendDelta(lst []Entry, delta Entry) []Entry {
 	if delta.isEmpty() {
 		return lst
 	}

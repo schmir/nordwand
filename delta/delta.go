@@ -11,7 +11,7 @@ type deltaBuilder struct {
 	chunkChecksums                 map[uint32]struct{}
 	secureHashMap                  map[[32]byte]int
 	deltaEntryStart, deltaEntryEnd uint64
-	delta                          []DeltaEntry
+	delta                          []Entry
 }
 
 func newDeltaBuilder(basisSignature *rsig.Signature) *deltaBuilder {
@@ -22,7 +22,7 @@ func newDeltaBuilder(basisSignature *rsig.Signature) *deltaBuilder {
 		secureHashMap:   make(map[[32]byte]int),
 		deltaEntryStart: 0,
 		deltaEntryEnd:   0,
-		delta:           []DeltaEntry{},
+		delta:           []Entry{},
 	}
 	for i, chunk := range basisSignature.Chunks {
 		db.chunkChecksums[chunk.Adler32Hash] = struct{}{}
@@ -47,13 +47,13 @@ func (db *deltaBuilder) findChunk() (int, bool) {
 
 func (db *deltaBuilder) storeChunkFound(i int) {
 	if db.chksum.IsFull() {
-		db.delta = AppendDelta(db.delta, DeltaEntry{
+		db.delta = AppendDelta(db.delta, Entry{
 			Start:  db.deltaEntryStart,
 			End:    db.deltaEntryEnd - uint64(db.signature.WindowSize),
 			Source: SourceUpdate,
 		})
 	}
-	db.delta = AppendDelta(db.delta, DeltaEntry{
+	db.delta = AppendDelta(db.delta, Entry{
 		Start:  uint64(i) * uint64(db.signature.WindowSize),
 		End:    uint64(i)*uint64(db.signature.WindowSize) + uint64(db.chksum.Size()),
 		Source: SourceBasis,
@@ -65,7 +65,7 @@ func (db *deltaBuilder) storeChunkFound(i int) {
 
 func (db *deltaBuilder) push(b byte) {
 	db.chksum.Push(b)
-	db.deltaEntryEnd += 1
+	db.deltaEntryEnd++
 	if !db.chksum.IsFull() {
 		return
 	}
@@ -81,7 +81,7 @@ func (db *deltaBuilder) close() {
 	if found {
 		db.storeChunkFound(i)
 	} else {
-		db.delta = AppendDelta(db.delta, DeltaEntry{
+		db.delta = AppendDelta(db.delta, Entry{
 			Start:  db.deltaEntryStart,
 			End:    db.deltaEntryEnd,
 			Source: SourceUpdate,
@@ -91,7 +91,7 @@ func (db *deltaBuilder) close() {
 	}
 }
 
-func (db *deltaBuilder) Write(data []byte) (n int, err error) {
+func (db *deltaBuilder) Write(data []byte) (int, error) {
 	for _, b := range data {
 		db.push(b)
 	}
@@ -99,7 +99,7 @@ func (db *deltaBuilder) Write(data []byte) (n int, err error) {
 	return len(data), nil
 }
 
-func ComputeDelta(basisSignature *rsig.Signature, updated []byte) []DeltaEntry {
+func ComputeDelta(basisSignature *rsig.Signature, updated []byte) []Entry {
 	builder := newDeltaBuilder(basisSignature)
 	_, _ = builder.Write(updated)
 	builder.close()

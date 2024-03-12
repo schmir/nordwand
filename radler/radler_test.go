@@ -21,7 +21,7 @@ func newChksum(s uint32) chksum {
 	}
 }
 
-// TestRadler tests the rolling adler implementation by comparing against the stdlib's adler32 package
+// TestRadler tests the rolling adler implementation by comparing against the stdlib's adler32 package.
 func TestRadler(t *testing.T) {
 	data := make([]byte, 10*1024*1024)
 	_, err := rand.Read(data)
@@ -46,19 +46,17 @@ func TestRadler(t *testing.T) {
 	}
 }
 
+// TestRadlerSum256 tests that Sum256 works when the window is empty, half-filled, full, and when rolled.
 func TestRadlerSum256(t *testing.T) {
-	r := New(3)
-	assert.Equal(t, r.Sum256(), sha256.Sum256([]byte{}))
+	windowSize := 16
+	data := make([]byte, 3*windowSize)
+	for i := range len(data) {
+		data[i] = byte(i)
+	}
 
-	r.Push(byte(1))
-	assert.Equal(t, r.Sum256(), sha256.Sum256([]byte{1}))
-
-	r.Push(byte(2))
-	assert.Equal(t, r.Sum256(), sha256.Sum256([]byte{1, 2}))
-
-	r.Push(byte(3))
-	assert.Equal(t, r.Sum256(), sha256.Sum256([]byte{1, 2, 3}))
-
-	r.Push(byte(4))
-	assert.Equal(t, r.Sum256(), sha256.Sum256([]byte{2, 3, 4}))
+	r := New(uint32(windowSize))
+	for i, b := range data {
+		assert.Equal(t, r.Sum256(), sha256.Sum256(data[max(0, i-windowSize):i]))
+		r.Push(b)
+	}
 }

@@ -12,10 +12,10 @@ import (
 	"github.com/schmir/nordwand/rsig"
 )
 
-var chunk_data []byte = make([]byte, 16384)
+var chunkData = make([]byte, 16384)
 
 func init() {
-	_, err := rand.Read(chunk_data)
+	_, err := rand.Read(chunkData)
 	if err != nil {
 		panic(err)
 	}
@@ -24,7 +24,7 @@ func init() {
 type TestBuilder struct {
 	basis, update *bytes.Buffer
 	windowSize    int
-	expected      []delta.DeltaEntry
+	expected      []delta.Entry
 }
 
 func NewTestBuilder() *TestBuilder {
@@ -32,12 +32,12 @@ func NewTestBuilder() *TestBuilder {
 		basis:      &bytes.Buffer{},
 		update:     &bytes.Buffer{},
 		windowSize: 256,
-		expected:   []delta.DeltaEntry{},
+		expected:   []delta.Entry{},
 	}
 	return &tb
 }
 
-func (tb *TestBuilder) Expect(ds ...delta.DeltaEntry) {
+func (tb *TestBuilder) Expect(ds ...delta.Entry) {
 	for _, d := range ds {
 		tb.expected = delta.AppendDelta(tb.expected, d)
 	}
@@ -54,8 +54,8 @@ func TestEmptyAppend(t *testing.T) {
 		t.Run(fmt.Sprintf("size=%d", size),
 			func(t *testing.T) {
 				tb := NewTestBuilder()
-				_, _ = tb.update.Write(chunk_data[:size])
-				tb.Expect(delta.DeltaEntry{Start: 0, End: uint64(size), Source: delta.SourceUpdate})
+				_, _ = tb.update.Write(chunkData[:size])
+				tb.Expect(delta.Entry{Start: 0, End: uint64(size), Source: delta.SourceUpdate})
 				tb.Run(t)
 			},
 		)
@@ -67,9 +67,9 @@ func TestSameFile(t *testing.T) {
 		t.Run(fmt.Sprintf("size=%d", size),
 			func(t *testing.T) {
 				tb := NewTestBuilder()
-				tb.basis.Write(chunk_data[:size])
-				tb.update.Write(chunk_data[:size])
-				tb.Expect(delta.DeltaEntry{Start: 0, End: uint64(size), Source: delta.SourceBasis})
+				tb.basis.Write(chunkData[:size])
+				tb.update.Write(chunkData[:size])
+				tb.Expect(delta.Entry{Start: 0, End: uint64(size), Source: delta.SourceBasis})
 				tb.Run(t)
 			},
 		)

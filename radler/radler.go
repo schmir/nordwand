@@ -17,7 +17,7 @@ type Radler struct {
 	full   bool
 }
 
-// Checksum returns the current checksum
+// Checksum returns the current checksum.
 func (r *Radler) Checksum() uint32 {
 	return (r.s2 << 16) | r.s1
 }
@@ -44,7 +44,7 @@ func (r *Radler) Size() int {
 	return int(r.pos)
 }
 
-// pushOut a single byte from the checksum
+// pushOut a single byte from the checksum.
 func (r *Radler) pushOut(outgoing uint32) {
 	// substract once from s1
 	negOutgoing := mod - outgoing
@@ -55,7 +55,7 @@ func (r *Radler) pushOut(outgoing uint32) {
 	r.s2 = (r.s2 + negOutgoing*windowSize - 1) % mod
 }
 
-// Push adds a byte and if the window is full, also removes the oldest byte from the window
+// Push adds a byte and if the window is full, also removes the oldest byte from the window.
 func (r *Radler) Push(b byte) {
 	if r.full {
 		r.pushOut(uint32(r.window[r.pos]))
@@ -66,7 +66,7 @@ func (r *Radler) Push(b byte) {
 	r.s2 = (r.s2 + r.s1) % mod
 
 	r.window[r.pos] = b
-	r.pos += 1
+	r.pos++
 	if r.pos >= uint32(len(r.window)) {
 		r.pos = 0
 		r.full = true
